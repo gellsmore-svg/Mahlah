@@ -3,7 +3,7 @@ import ConversationSidebar from './components/ConversationSidebar'
 import ChatWindow from './components/ChatWindow'
 import PromptComposer from './components/PromptComposer'
 import ProcessPanel from './components/ProcessPanel'
-import { askTirzah } from './api'
+import { askTirzah, openTraceStream } from './api'
 import type { ChatMessage, Conversation, TraceEvent } from './types'
 
 const STORAGE_KEY = 'mahlah.conversations.v1'
@@ -73,6 +73,16 @@ export default function App() {
     setSending(true)
     setProcessEvents([])
 
+    // Live process stream for THIS request (no replay → only the new steps),
+    // so the panel fills in as the backend works rather than only at the end.
+    const stream = openTraceStream({ sessionId, replay: false }, (event) => {
+      setProcessEvents((prev) =>
+        prev.some((existing) => existing.event_id === event.event_id)
+          ? prev
+          : [...prev, event].sort((a, b) => a.seq - b.seq),
+      )
+    })
+
     try {
       const response = await askTirzah({ query: text, sessionId, model })
       setProcessEvents(response.processEvents ?? [])
@@ -95,6 +105,7 @@ export default function App() {
         ),
       }))
     } finally {
+      stream.close()
       setSending(false)
     }
   }

@@ -53,12 +53,13 @@ export async function submitFeedback(params: {
  * Returns the EventSource so the caller can `.close()` it.
  */
 export function openTraceStream(
-  params: { sessionId?: string; traceId?: string },
+  params: { sessionId?: string; traceId?: string; replay?: boolean },
   onEvent: (event: TraceEvent) => void,
 ): EventSource {
   const q = new URLSearchParams()
   if (params.traceId) q.set('trace_id', params.traceId)
   if (params.sessionId) q.set('session_id', params.sessionId)
+  if (params.replay === false) q.set('replay', 'false')
   const source = new EventSource(`/api/trace/stream?${q.toString()}`)
   source.onmessage = (event) => {
     if (!event.data) return

@@ -41,6 +41,12 @@ export default function App() {
   const [collapsed, setCollapsed] = useState(false)
   const [sending, setSending] = useState(false)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const [theme, setTheme] = useState(() => localStorage.getItem('mahlah.theme') || 'eink')
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    localStorage.setItem('mahlah.theme', theme)
+  }, [theme])
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations))
@@ -168,6 +174,8 @@ export default function App() {
         onToggle={() => setCollapsed((value) => !value)}
         onRename={renameConversation}
         onDelete={deleteConversation}
+        theme={theme}
+        onToggleTheme={() => setTheme((value) => (value === 'eink' ? 'dark' : 'eink'))}
       />
       <main className="main">
         <ChatWindow messages={messages} />

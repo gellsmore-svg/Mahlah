@@ -10,6 +10,8 @@ interface Props {
   onToggle: () => void
   onRename: (id: string, title: string) => void
   onDelete: (id: string) => void
+  theme: string
+  onToggleTheme: () => void
 }
 
 export default function ConversationSidebar({
@@ -21,6 +23,8 @@ export default function ConversationSidebar({
   onToggle,
   onRename,
   onDelete,
+  theme,
+  onToggleTheme,
 }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
@@ -48,6 +52,15 @@ export default function ConversationSidebar({
           ☰
         </button>
         {!collapsed && <span className="sidebar__brand">Mahlah</span>}
+        {!collapsed && (
+          <button
+            className="icon-btn"
+            title={theme === 'eink' ? 'Switch to dark theme' : 'Switch to e-ink theme'}
+            onClick={onToggleTheme}
+          >
+            {theme === 'eink' ? '☾' : '☼'}
+          </button>
+        )}
         {!collapsed && (
           <button className="icon-btn icon-btn--accent" title="New chat" onClick={onNewChat}>
             ✎

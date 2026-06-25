@@ -506,3 +506,76 @@ body {
   opacity: 0.45;
   cursor: default;
 }
+
+/* --- e-ink theme: high-contrast monochrome, no animation (reflective displays) --- */
+:root[data-theme='eink'] {
+  --bg: #ffffff;
+  --bg-2: #ffffff;
+  --bg-3: #ececec;
+  --border: #000000;
+  --text: #000000;
+  --muted: #555555;
+  --accent: #000000;
+  --accent-2: #000000;
+  --user: #e7e7e7;
+  --assistant: #ffffff;
+  --danger: #000000;
+  --ok: #000000;
+  --started: #000000;
+}
+:root[data-theme='eink'] *,
+:root[data-theme='eink'] *::before,
+:root[data-theme='eink'] *::after {
+  transition: none !important;
+  animation: none !important;
+  scroll-behavior: auto !important;
+}
+/* clear borders instead of subtle background fills */
+:root[data-theme='eink'] .bubble--assistant,
+:root[data-theme='eink'] .bubble--user {
+  border: 1px solid #000;
+}
+:root[data-theme='eink'] .composer__box,
+:root[data-theme='eink'] .model-select,
+:root[data-theme='eink'] .modal__textarea,
+:root[data-theme='eink'] .modal,
+:root[data-theme='eink'] .conv__edit,
+:root[data-theme='eink'] .logrow__meta {
+  border-color: #000;
+  background: #fff;
+}
+:root[data-theme='eink'] .composer__send,
+:root[data-theme='eink'] .btn-primary {
+  background: #000;
+  color: #fff;
+}
+:root[data-theme='eink'] .live {
+  color: #000;
+}
+/* status by SHAPE, not colour, so it reads in monochrome */
+:root[data-theme='eink'] .dot {
+  background: #fff;
+  border: 1.5px solid #000;
+}
+:root[data-theme='eink'] .dot--ok {
+  background: #000;
+} /* filled = done */
+:root[data-theme='eink'] .dot--started {
+  background: #fff;
+} /* hollow = running */
+:root[data-theme='eink'] .dot--failed {
+  background: #fff;
+  border-style: dashed;
+} /* dashed = failed */
+:root[data-theme='eink'] .badge {
+  background: #fff;
+  border: 1px solid #000;
+  color: #000;
+}
+:root[data-theme='eink'] .badge--failed {
+  border-style: dashed;
+}
+:root[data-theme='eink'] .logrow--error {
+  background: #fff;
+  border-left: 3px solid #000;
+}

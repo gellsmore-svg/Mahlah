@@ -42,11 +42,18 @@ export default function App() {
   const [sending, setSending] = useState(false)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
   const [theme, setTheme] = useState(() => localStorage.getItem('mahlah.theme') || 'eink')
+  const [processCollapsed, setProcessCollapsed] = useState(
+    () => localStorage.getItem('mahlah.processCollapsed') !== 'false',
+  )
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
     localStorage.setItem('mahlah.theme', theme)
   }, [theme])
+
+  useEffect(() => {
+    localStorage.setItem('mahlah.processCollapsed', String(processCollapsed))
+  }, [processCollapsed])
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations))
@@ -161,7 +168,7 @@ export default function App() {
   }
 
   return (
-    <div className="app">
+    <div className={`app ${processCollapsed ? 'app--process-collapsed' : ''}`}>
       <ConversationSidebar
         conversations={conversations}
         activeId={activeId}
@@ -196,6 +203,8 @@ export default function App() {
       <ProcessPanel
         events={processEvents}
         streaming={sending}
+        collapsed={processCollapsed}
+        onToggle={() => setProcessCollapsed((value) => !value)}
         onOpenDevLog={activeId ? openDevLog : undefined}
         onOpenFeedback={activeId ? () => setFeedbackOpen(true) : undefined}
       />

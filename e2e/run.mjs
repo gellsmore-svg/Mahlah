@@ -23,8 +23,8 @@ check('new-chat control present (compact)', (await page.locator('.icon-btn--acce
 check('welcome / chat area present', (await page.locator('.welcome, .messages').count()) > 0)
 check('bottom composer input present', (await page.locator('.composer__input').count()) > 0)
 check('compact send icon (not full-width Ask button)', (await page.locator('.composer__send').count()) > 0)
-const processHeader = await page.locator('.process__head').innerText()
-check('process panel present on the right', processHeader.includes('Process'))
+check('process panel present on the right', (await page.locator('.process').count()) > 0)
+check('process panel collapsed by default', (await page.locator('.process--collapsed').count()) === 1)
 const selects = page.locator('.composer__meta select')
 check('model / adapter / mode selectors present', (await selects.count()) === 3, `${await selects.count()} selects`)
 
@@ -43,6 +43,9 @@ await page.waitForFunction(
 )
 const mockAnswer = (await page.locator('.bubble--assistant .bubble__text').last().innerText()).trim()
 check('assistant answer renders in the chat bubble', mockAnswer.length > 0, JSON.stringify(mockAnswer).slice(0, 100))
+// expand the (default-collapsed) process panel to inspect events
+await page.locator('button[title="Show process"]').click()
+check('process panel expands on click', (await page.locator('.process__head').innerText()).includes('Process'))
 const eventCount = await page.locator('.process .event').count()
 check('process panel populated, separate from the answer', eventCount > 0, `${eventCount} events`)
 

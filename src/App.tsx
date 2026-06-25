@@ -112,6 +112,20 @@ export default function App() {
     }
   }
 
+  const renameConversation = (id: string, title: string) => {
+    const cleaned = title.trim()
+    if (!cleaned) return
+    updateConversation(id, (conversation) => ({ ...conversation, title: cleaned }))
+  }
+
+  const deleteConversation = (id: string) => {
+    setConversations((prev) => prev.filter((conversation) => conversation.id !== id))
+    if (activeId === id) {
+      setActiveId(null)
+      setProcessEvents([])
+    }
+  }
+
   const openDevLog = () => {
     if (!activeId) return
     const url = `${window.location.pathname}?view=devlog&session=${encodeURIComponent(activeId)}`
@@ -130,6 +144,8 @@ export default function App() {
         }}
         onNewChat={newChat}
         onToggle={() => setCollapsed((value) => !value)}
+        onRename={renameConversation}
+        onDelete={deleteConversation}
       />
       <main className="main">
         <ChatWindow messages={messages} />

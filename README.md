@@ -67,8 +67,27 @@ Candidate components: `ConversationSidebar`, `ChatWindow`, `MessageList`,
 `MessageBubble`, `PromptComposer`, `ProcessPanel`, `ProcessEventList`,
 `DevLogViewer`, `FeedbackPanel`, `ModelSelector`, `NewChatButton`.
 
+## Running it
+
+```bash
+# 1) Tirzah backend (uvicorn on :8000)
+cd ../Tirzah && tirzah serve
+# 2) Mahlah (http://localhost:5273, proxies /api -> :8000)
+npm install && npm run dev
+```
+Override the backend with `VITE_TIRZAH_API`.
+
 ## Status
 
-Repo scaffolded. **Frontend stack not yet chosen** (Vite + a light framework vs
-vanilla ES modules) — pending decision before the app is built out. The Tirzah
-backend contract it depends on is already live.
+**Stack: Vite + React + TypeScript.** Core implemented and building clean:
+
+- ✅ Conversational layout — collapsible sidebar, rolling chat, bottom composer
+  (Enter sends / Shift+Enter newline), compact send + model selector.
+- ✅ Conversations — auto-titled from the first prompt, inline rename, delete;
+  persisted client-side (localStorage) keyed by Tirzah `session_id`.
+- ✅ Clean answers in chat; **process in a separate panel, live via SSE**.
+- ✅ Separate **dev-log window** (`⤢`) — history + live, full event detail, copy-as-JSON.
+- ✅ **Feedback** (`⚑`) — free-text, tied to the current session/trace.
+
+Not yet done: LLM-derived titles, server-side session sync (`/api/sessions`), and
+retiring Tirzah's old built-in static UI (pending a live run-through).

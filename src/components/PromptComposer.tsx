@@ -1,15 +1,33 @@
 import { useState, type KeyboardEvent } from 'react'
+import type { ModelOption } from '../types'
 
 interface Props {
   disabled: boolean
+  models: ModelOption[]
+  adapters: string[]
+  modes: string[]
   model: string
+  adapter: string
+  mode: string
   onModelChange: (model: string) => void
+  onAdapterChange: (adapter: string) => void
+  onModeChange: (mode: string) => void
   onSend: (text: string) => void
 }
 
-const MODELS = ['gemma3:1b', 'gemma2:latest', 'gemma4:latest', 'llama3.2:latest']
-
-export default function PromptComposer({ disabled, model, onModelChange, onSend }: Props) {
+export default function PromptComposer({
+  disabled,
+  models,
+  adapters,
+  modes,
+  model,
+  adapter,
+  mode,
+  onModelChange,
+  onAdapterChange,
+  onModeChange,
+  onSend,
+}: Props) {
   const [text, setText] = useState('')
 
   const send = () => {
@@ -43,19 +61,28 @@ export default function PromptComposer({ disabled, model, onModelChange, onSend 
         </button>
       </div>
       <div className="composer__meta">
-        <select
-          className="model-select"
-          value={model}
-          onChange={(event) => onModelChange(event.target.value)}
-          title="Answer model"
-        >
-          {MODELS.map((name) => (
+        <select className="model-select" value={model} onChange={(event) => onModelChange(event.target.value)} title="Answer model">
+          {models.length === 0 && <option value="">(no models)</option>}
+          {models.map((option) => (
+            <option key={option.name} value={option.name}>
+              {option.label || option.name}
+            </option>
+          ))}
+        </select>
+        <select className="model-select" value={adapter} onChange={(event) => onAdapterChange(event.target.value)} title="Answer adapter">
+          {adapters.map((name) => (
             <option key={name} value={name}>
               {name}
             </option>
           ))}
         </select>
-        <span className="muted composer__hint">Tirzah · local memory</span>
+        <select className="model-select" value={mode} onChange={(event) => onModeChange(event.target.value)} title="Retrieval mode">
+          {modes.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   )

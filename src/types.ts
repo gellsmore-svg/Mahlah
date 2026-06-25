@@ -27,6 +27,22 @@ export interface AskResponse {
   semantic_summary?: string
 }
 
+export interface ModelOption {
+  name: string
+  label: string
+  size_category?: string
+}
+
+export interface Runtime {
+  ok: boolean
+  default_adapter: string
+  default_model: string
+  available_adapters: string[]
+  available_retrieval_modes: string[]
+  retrieval_mode?: string
+  model_options: ModelOption[]
+}
+
 export type Role = 'user' | 'assistant'
 
 export interface ChatMessage {

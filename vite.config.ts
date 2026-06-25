@@ -1,9 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// The Tirzah backend (uvicorn / `tirzah serve`). Override with VITE_TIRZAH_API.
-// All /api calls (including the SSE trace stream) are proxied here in dev.
-const TIRZAH_API = process.env.VITE_TIRZAH_API || 'http://localhost:8000'
+// The Tirzah backend. `tirzah serve` defaults to port 8765. Override with
+// VITE_TIRZAH_API. All /api calls (including the SSE trace stream) proxy here.
+const TIRZAH_API = process.env.VITE_TIRZAH_API || 'http://localhost:8765'
 
 export default defineConfig({
   plugins: [react()],

@@ -1,11 +1,18 @@
-import type { AskResponse, TraceEvent } from './types'
+import type { AskResponse, Runtime, TraceEvent } from './types'
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' }
+
+export async function fetchRuntime(): Promise<Runtime> {
+  const res = await fetch('/api/runtime')
+  if (!res.ok) throw new Error(`Tirzah /api/runtime failed: ${res.status}`)
+  return (await res.json()) as Runtime
+}
 
 export async function askTirzah(params: {
   query: string
   sessionId: string
   model?: string
+  adapter?: string
   retrievalMode?: string
 }): Promise<AskResponse> {
   const res = await fetch('/api/ask', {
@@ -15,6 +22,7 @@ export async function askTirzah(params: {
       query: params.query,
       session_id: params.sessionId,
       model: params.model || undefined,
+      adapter: params.adapter || undefined,
       retrieval_mode: params.retrievalMode || undefined,
     }),
   })

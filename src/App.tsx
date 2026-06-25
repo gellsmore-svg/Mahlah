@@ -4,8 +4,8 @@ import ChatWindow from './components/ChatWindow'
 import PromptComposer from './components/PromptComposer'
 import ProcessPanel from './components/ProcessPanel'
 import FeedbackPanel from './components/FeedbackPanel'
-import { askTirzah, openTraceStream } from './api'
-import type { ChatMessage, Conversation, TraceEvent } from './types'
+import { askTirzah, fetchRuntime, openTraceStream } from './api'
+import type { ChatMessage, Conversation, ModelOption, TraceEvent } from './types'
 
 const STORAGE_KEY = 'mahlah.conversations.v1'
 
@@ -32,7 +32,12 @@ export default function App() {
   const [conversations, setConversations] = useState<Conversation[]>(loadConversations)
   const [activeId, setActiveId] = useState<string | null>(() => loadConversations()[0]?.id ?? null)
   const [processEvents, setProcessEvents] = useState<TraceEvent[]>([])
-  const [model, setModel] = useState('gemma3:1b')
+  const [models, setModels] = useState<ModelOption[]>([])
+  const [adapters, setAdapters] = useState<string[]>(['mock', 'ollama_http', 'ollama_cli'])
+  const [modes, setModes] = useState<string[]>(['direct', 'agentic', 'deep'])
+  const [model, setModel] = useState('')
+  const [adapter, setAdapter] = useState('')
+  const [mode, setMode] = useState('direct')
   const [collapsed, setCollapsed] = useState(false)
   const [sending, setSending] = useState(false)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
@@ -40,6 +45,23 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations))
   }, [conversations])
+
+  // Populate model / adapter / retrieval-mode options from the live backend so
+  // the UI never offers models that aren't installed.
+  useEffect(() => {
+    fetchRuntime()
+      .then((runtime) => {
+        if (runtime.model_options?.length) setModels(runtime.model_options)
+        if (runtime.available_adapters?.length) setAdapters(runtime.available_adapters)
+        if (runtime.available_retrieval_modes?.length) setModes(runtime.available_retrieval_modes)
+        setModel(runtime.default_model || runtime.model_options?.[0]?.name || '')
+        setAdapter(runtime.default_adapter || '')
+        if (runtime.retrieval_mode) setMode(runtime.retrieval_mode)
+      })
+      .catch(() => {
+        /* backend not reachable yet — keep sensible fallbacks */
+      })
+  }, [])
 
   const active = useMemo(
     () => conversations.find((conversation) => conversation.id === activeId) ?? null,
@@ -86,7 +108,7 @@ export default function App() {
     })
 
     try {
-      const response = await askTirzah({ query: text, sessionId, model })
+      const response = await askTirzah({ query: text, sessionId, model, adapter, retrievalMode: mode })
       setProcessEvents(response.processEvents ?? [])
       updateConversation(sessionId, (conversation) => ({
         ...conversation,
@@ -149,7 +171,19 @@ export default function App() {
       />
       <main className="main">
         <ChatWindow messages={messages} />
-        <PromptComposer disabled={sending} model={model} onModelChange={setModel} onSend={handleSend} />
+        <PromptComposer
+          disabled={sending}
+          models={models}
+          adapters={adapters}
+          modes={modes}
+          model={model}
+          adapter={adapter}
+          mode={mode}
+          onModelChange={setModel}
+          onAdapterChange={setAdapter}
+          onModeChange={setMode}
+          onSend={handleSend}
+        />
       </main>
       <ProcessPanel
         events={processEvents}

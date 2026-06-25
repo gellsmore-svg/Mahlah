@@ -70,12 +70,14 @@ Candidate components: `ConversationSidebar`, `ChatWindow`, `MessageList`,
 ## Running it
 
 ```bash
-# 1) Tirzah backend (uvicorn on :8000)
+# 1) Tirzah backend (uvicorn on :8765 by default)
 cd ../Tirzah && tirzah serve
-# 2) Mahlah (http://localhost:5273, proxies /api -> :8000)
+# 2) Mahlah (http://localhost:5273, proxies /api -> :8765)
 npm install && npm run dev
 ```
-Override the backend with `VITE_TIRZAH_API`.
+Override the backend with `VITE_TIRZAH_API`. The model / adapter / retrieval-mode
+dropdowns populate from the backend's `/api/runtime`, so they always reflect what's
+actually installed.
 
 ## Status
 

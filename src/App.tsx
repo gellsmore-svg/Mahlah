@@ -110,6 +110,12 @@ export default function App() {
     }
   }
 
+  const openDevLog = () => {
+    if (!activeId) return
+    const url = `${window.location.pathname}?view=devlog&session=${encodeURIComponent(activeId)}`
+    window.open(url, `mahlah-devlog-${activeId}`, 'width=660,height=840')
+  }
+
   return (
     <div className="app">
       <ConversationSidebar
@@ -127,7 +133,7 @@ export default function App() {
         <ChatWindow messages={messages} />
         <PromptComposer disabled={sending} model={model} onModelChange={setModel} onSend={handleSend} />
       </main>
-      <ProcessPanel events={processEvents} streaming={sending} />
+      <ProcessPanel events={processEvents} streaming={sending} onOpenDevLog={activeId ? openDevLog : undefined} />
     </div>
   )
 }

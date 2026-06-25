@@ -297,3 +297,104 @@ body {
   font-size: 11px;
   font-family: ui-monospace, 'SF Mono', Menlo, monospace;
 }
+.process__head-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- dev-log window (standalone view) --- */
+.devlog {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+.devlog__head {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.devlog__scope {
+  font-size: 12px;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  margin-left: 8px;
+}
+.devlog__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.devlog__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 14px;
+  font-size: 13px;
+}
+.devlog__empty {
+  font-size: 13px;
+}
+.logrow {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.logrow--error {
+  background: rgba(255, 107, 107, 0.06);
+}
+.logrow__top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.logrow__ts {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  color: var(--muted);
+  font-size: 12px;
+}
+.logrow__type {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  color: var(--accent);
+}
+.logrow__src {
+  font-size: 11px;
+}
+.logrow__summary {
+  margin: 3px 0;
+}
+.logrow__meta {
+  margin: 4px 0;
+  padding: 8px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+.logrow__ids {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 11px;
+}
+.badge {
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--bg-3);
+  color: var(--text);
+}
+.badge--failed {
+  background: rgba(255, 107, 107, 0.2);
+  color: var(--danger);
+}
+.badge--started {
+  background: rgba(230, 180, 80, 0.18);
+  color: var(--started);
+}
+.badge--completed,
+.badge--ok {
+  background: rgba(87, 201, 139, 0.16);
+  color: var(--ok);
+}

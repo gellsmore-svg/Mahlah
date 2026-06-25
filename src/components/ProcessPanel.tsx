@@ -3,6 +3,7 @@ import type { TraceEvent } from '../types'
 interface Props {
   events: TraceEvent[]
   streaming: boolean
+  onOpenDevLog?: () => void
 }
 
 const STATUS_DOT: Record<string, string> = {
@@ -12,12 +13,19 @@ const STATUS_DOT: Record<string, string> = {
   failed: 'dot--failed',
 }
 
-export default function ProcessPanel({ events, streaming }: Props) {
+export default function ProcessPanel({ events, streaming, onOpenDevLog }: Props) {
   return (
     <aside className="process">
       <div className="process__head">
         <span>Process</span>
-        {streaming && <span className="live">● live</span>}
+        <span className="process__head-right">
+          {streaming && <span className="live">● live</span>}
+          {onOpenDevLog && (
+            <button className="icon-btn" title="Open live dev log in a new window" onClick={onOpenDevLog}>
+              ⤢
+            </button>
+          )}
+        </span>
       </div>
       <div className="process__list">
         {events.length === 0 && (

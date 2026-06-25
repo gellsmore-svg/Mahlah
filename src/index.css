@@ -398,3 +398,77 @@ body {
   background: rgba(87, 201, 139, 0.16);
   color: var(--ok);
 }
+
+/* --- feedback modal --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+.modal {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  width: min(520px, 92vw);
+  padding: 16px;
+}
+.modal__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modal__hint {
+  font-size: 12px;
+  margin: 6px 0 10px;
+}
+.modal__textarea {
+  width: 100%;
+  resize: vertical;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font: inherit;
+  padding: 10px;
+  outline: none;
+}
+.modal__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  gap: 10px;
+}
+.modal__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.feedback-error {
+  color: var(--danger);
+  font-size: 13px;
+}
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 7px 14px;
+  cursor: pointer;
+}
+.btn-primary {
+  background: var(--accent-2);
+  border: none;
+  color: #fff;
+  border-radius: 8px;
+  padding: 7px 16px;
+  cursor: pointer;
+}
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

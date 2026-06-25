@@ -4,6 +4,7 @@ interface Props {
   events: TraceEvent[]
   streaming: boolean
   onOpenDevLog?: () => void
+  onOpenFeedback?: () => void
 }
 
 const STATUS_DOT: Record<string, string> = {
@@ -13,13 +14,18 @@ const STATUS_DOT: Record<string, string> = {
   failed: 'dot--failed',
 }
 
-export default function ProcessPanel({ events, streaming, onOpenDevLog }: Props) {
+export default function ProcessPanel({ events, streaming, onOpenDevLog, onOpenFeedback }: Props) {
   return (
     <aside className="process">
       <div className="process__head">
         <span>Process</span>
         <span className="process__head-right">
           {streaming && <span className="live">● live</span>}
+          {onOpenFeedback && (
+            <button className="icon-btn" title="Send feedback about this conversation" onClick={onOpenFeedback}>
+              ⚑
+            </button>
+          )}
           {onOpenDevLog && (
             <button className="icon-btn" title="Open live dev log in a new window" onClick={onOpenDevLog}>
               ⤢

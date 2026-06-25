@@ -3,6 +3,7 @@ import ConversationSidebar from './components/ConversationSidebar'
 import ChatWindow from './components/ChatWindow'
 import PromptComposer from './components/PromptComposer'
 import ProcessPanel from './components/ProcessPanel'
+import FeedbackPanel from './components/FeedbackPanel'
 import { askTirzah, openTraceStream } from './api'
 import type { ChatMessage, Conversation, TraceEvent } from './types'
 
@@ -34,6 +35,7 @@ export default function App() {
   const [model, setModel] = useState('gemma3:1b')
   const [collapsed, setCollapsed] = useState(false)
   const [sending, setSending] = useState(false)
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations))
@@ -133,7 +135,18 @@ export default function App() {
         <ChatWindow messages={messages} />
         <PromptComposer disabled={sending} model={model} onModelChange={setModel} onSend={handleSend} />
       </main>
-      <ProcessPanel events={processEvents} streaming={sending} onOpenDevLog={activeId ? openDevLog : undefined} />
+      <ProcessPanel
+        events={processEvents}
+        streaming={sending}
+        onOpenDevLog={activeId ? openDevLog : undefined}
+        onOpenFeedback={activeId ? () => setFeedbackOpen(true) : undefined}
+      />
+      <FeedbackPanel
+        open={feedbackOpen}
+        sessionId={activeId}
+        traceId={active?.lastTraceId}
+        onClose={() => setFeedbackOpen(false)}
+      />
     </div>
   )
 }

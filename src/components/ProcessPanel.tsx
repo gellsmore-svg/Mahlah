@@ -1,0 +1,43 @@
+import type { TraceEvent } from '../types'
+
+interface Props {
+  events: TraceEvent[]
+  streaming: boolean
+}
+
+const STATUS_DOT: Record<string, string> = {
+  started: 'dot--started',
+  ok: 'dot--ok',
+  completed: 'dot--ok',
+  failed: 'dot--failed',
+}
+
+export default function ProcessPanel({ events, streaming }: Props) {
+  return (
+    <aside className="process">
+      <div className="process__head">
+        <span>Process</span>
+        {streaming && <span className="live">● live</span>}
+      </div>
+      <div className="process__list">
+        {events.length === 0 && (
+          <p className="muted process__empty">
+            Process steps for the current request appear here — separate from the answer.
+          </p>
+        )}
+        {events.map((event) => (
+          <div key={event.event_id} className="event">
+            <span className={`dot ${STATUS_DOT[event.status] ?? 'dot--ok'}`} />
+            <div className="event__body">
+              <div className="event__summary">{event.summary || event.type}</div>
+              <div className="event__type muted">
+                {event.type}
+                {event.status !== 'ok' ? ` · ${event.status}` : ''}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </aside>
+  )
+}

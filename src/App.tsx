@@ -185,7 +185,7 @@ export default function App() {
         onToggleTheme={() => setTheme((value) => (value === 'eink' ? 'dark' : 'eink'))}
       />
       <main className="main">
-        <ChatWindow messages={messages} />
+        <ChatWindow messages={messages} onSuggestion={sending ? undefined : handleSend} />
         <PromptComposer
           disabled={sending}
           models={models}

@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from 'react'
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import type { ModelOption } from '../types'
 
 interface Props {
@@ -29,6 +29,15 @@ export default function PromptComposer({
   onSend,
 }: Props) {
   const [text, setText] = useState('')
+  const inputRef = useRef<HTMLTextAreaElement>(null)
+
+  // Grow with the draft (up to the CSS max-height) instead of scrolling one row.
+  useEffect(() => {
+    const el = inputRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${Math.min(el.scrollHeight, 200)}px`
+  }, [text])
 
   const send = () => {
     const trimmed = text.trim()
@@ -48,6 +57,7 @@ export default function PromptComposer({
     <div className="composer">
       <div className="composer__box">
         <textarea
+          ref={inputRef}
           className="composer__input"
           placeholder="Message Tirzah…   (Enter to send · Shift+Enter for newline)"
           value={text}

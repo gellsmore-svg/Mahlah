@@ -3,6 +3,9 @@
 import { chromium } from 'playwright'
 
 const BASE = process.env.MAHLAH_URL || 'http://localhost:5273'
+// Tirzah does per-exchange memory work (embedding/chunking against Mongo), so even
+// a mock answer can take well over 30s on a loaded box. Override per machine.
+const ANSWER_TIMEOUT = Number(process.env.MAHLAH_E2E_ANSWER_TIMEOUT || 120000)
 const pass = []
 const fail = []
 const check = (name, cond, detail = '') => {
@@ -34,12 +37,15 @@ await page.locator('.composer__input').fill('What is a vorton?')
 await page.locator('.composer__input').press('Enter')
 await page.waitForSelector('.bubble--user', { timeout: 10000 })
 check('user message appears in chat', (await page.locator('.bubble--user .bubble__text').first().innerText()).includes('vorton'))
+// NB: waitForFunction is (fn, arg, options) — the options must be the THIRD
+// argument or the timeout silently falls back to the 30s default.
 await page.waitForFunction(
   () => {
     const el = document.querySelector('.bubble--assistant .bubble__text')
     return el && !el.querySelector('.typing') && el.textContent.trim().length > 0
   },
-  { timeout: 30000 },
+  undefined,
+  { timeout: ANSWER_TIMEOUT },
 )
 const mockAnswer = (await page.locator('.bubble--assistant .bubble__text').last().innerText()).trim()
 check('assistant answer renders in the chat bubble', mockAnswer.length > 0, JSON.stringify(mockAnswer).slice(0, 100))
@@ -83,7 +89,8 @@ try {
       const el = els[els.length - 1]
       return el && !el.querySelector('.typing') && el.textContent.trim().length > 0
     },
-    { timeout: 120000 },
+    undefined,
+    { timeout: ANSWER_TIMEOUT },
   )
   realAnswer = (await page.locator('.bubble--assistant .bubble__text').last().innerText()).trim()
   const leak = ['Prompt Intake', 'Context Lookup', 'Tool/Adapter', 'Mongo lookup ran', 'step-by-step look at how it was built', 'Answer Generation'].filter((w) => realAnswer.includes(w))

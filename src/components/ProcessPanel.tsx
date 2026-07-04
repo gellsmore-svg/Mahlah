@@ -55,18 +55,27 @@ export default function ProcessPanel({ events, streaming, collapsed, onToggle, o
             Process steps for the current request appear here — separate from the answer.
           </p>
         )}
-        {events.map((event) => (
-          <div key={event.event_id} className="event">
-            <span className={`dot ${STATUS_DOT[event.status] ?? 'dot--ok'}`} />
-            <div className="event__body">
-              <div className="event__summary">{event.summary || event.type}</div>
-              <div className="event__type muted">
-                {event.type}
-                {event.status !== 'ok' ? ` · ${event.status}` : ''}
+        {events.map((event) => {
+          const isPlan = event.type.startsWith('plan.')
+          const construct = isPlan ? (event.metadata?.construct as string | undefined) : undefined
+          const stepId = isPlan ? (event.metadata?.step_id as string | undefined) : undefined
+          return (
+            <div key={event.event_id} className={`event ${isPlan ? 'event--plan' : ''}`}>
+              <span className={`dot ${STATUS_DOT[event.status] ?? 'dot--ok'}`} />
+              <div className="event__body">
+                <div className="event__summary">
+                  {isPlan && construct && <span className="plan-badge">{construct}</span>}
+                  {isPlan && stepId && <span className="plan-step muted">#{stepId}</span>}
+                  {event.summary || event.type}
+                </div>
+                <div className="event__type muted">
+                  {event.type}
+                  {event.status !== 'ok' ? ` · ${event.status}` : ''}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </aside>
   )

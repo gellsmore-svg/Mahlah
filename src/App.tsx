@@ -113,6 +113,9 @@ export default function App() {
     // Live process stream for THIS request (no replay → only the new steps),
     // so the panel fills in as the backend works rather than only at the end.
     const stream = openTraceStream({ sessionId, replay: false }, (event) => {
+      // A live plan execution is the process the user asked to see — reveal
+      // the panel the moment plan steps start streaming.
+      if (event.type.startsWith('plan.')) setProcessCollapsed(false)
       setProcessEvents((prev) =>
         prev.some((existing) => existing.event_id === event.event_id)
           ? prev

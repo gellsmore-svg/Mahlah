@@ -715,3 +715,30 @@ body {
 :root[data-theme='eink'] .md blockquote {
   border-left-color: #000;
 }
+
+/* --- live plan execution in the process panel --- */
+.event--plan .event__summary {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.plan-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--accent-2);
+  color: #fff;
+  flex: none;
+}
+.plan-step {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 11px;
+  flex: none;
+}
+:root[data-theme='eink'] .plan-badge {
+  background: #000;
+  color: #fff;
+}

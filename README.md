@@ -50,8 +50,8 @@ Tirzah's backend already returns the 3-channel contract (Phase 1, complete):
 Structured event types are stable and extensible: `session.created`,
 `message.user.submitted`, `process.started`, `retrieval.mongo.*`,
 `context.selected`, `research.*`, `model.prompt.built`, `model.response.*`,
-`answer.finalized`, `log.persisted`, `feedback.submitted`, … (see Tirzah
-`src/tirzah/trace/events.py`).
+`answer.finalized`, `log.persisted`, `feedback.submitted`, … (defined by
+Galeed, with Tirzah currently serving the HTTP/SSE trace API).
 
 ## Planned UI (Phase 2)
 

@@ -71,7 +71,7 @@ Candidate components: `ConversationSidebar`, `ChatWindow`, `MessageList`,
 
 ```bash
 # 1) Tirzah backend (uvicorn on :8765 by default)
-cd ../Tirzah && tirzah serve
+cd ../tirzah && tirzah serve
 # 2) Mahlah (http://localhost:5273, proxies /api -> :8765)
 npm install && npm run dev
 ```

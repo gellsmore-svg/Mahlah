@@ -5,6 +5,7 @@ interface Props {
   open: boolean
   sessionId: string | null
   traceId?: string
+  messageId?: string
   onClose: () => void
 }
 
@@ -12,7 +13,7 @@ const KINDS = ['idea', 'bug', 'ui', 'reasoning', 'other']
 
 type Status = 'idle' | 'sending' | 'done' | 'error'
 
-export default function FeedbackPanel({ open, sessionId, traceId, onClose }: Props) {
+export default function FeedbackPanel({ open, sessionId, traceId, messageId, onClose }: Props) {
   const [text, setText] = useState('')
   const [kind, setKind] = useState('idea')
   const [status, setStatus] = useState<Status>('idle')
@@ -24,7 +25,7 @@ export default function FeedbackPanel({ open, sessionId, traceId, onClose }: Pro
     if (!trimmed || !sessionId) return
     setStatus('sending')
     try {
-      await submitFeedback({ text: trimmed, sessionId, traceId, kind, source: 'user' })
+      await submitFeedback({ text: trimmed, sessionId, traceId, messageId, kind, source: 'user' })
       setStatus('done')
       setText('')
       window.setTimeout(onClose, 900)

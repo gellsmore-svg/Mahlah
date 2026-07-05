@@ -60,4 +60,5 @@ export interface Conversation {
   createdAt: number
   messages: ChatMessage[]
   lastTraceId?: string
+  lastMessageId?: string
 }

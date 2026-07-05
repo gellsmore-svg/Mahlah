@@ -1,7 +1,7 @@
 // Generic screenshot of a URL (optionally click the first .session).
 import { chromium } from 'playwright'
 
-const URL = process.env.URL || 'http://localhost:5274'
+const URL = process.env.URL || 'http://localhost:5273'
 const OUT = process.argv[2] || '/tmp/shot.png'
 const browser = await chromium.launch({ headless: true, args: ['--no-sandbox'] })
 const page = await browser.newContext({ viewport: { width: 1280, height: 800 } }).then((c) => c.newPage())

@@ -22,7 +22,17 @@ function deriveTitle(text: string): string {
 function loadConversations(): Conversation[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? (JSON.parse(raw) as Conversation[]) : []
+    const parsed: unknown = raw ? JSON.parse(raw) : []
+    if (!Array.isArray(parsed)) return []
+    // Schema-check each record so corrupt/legacy storage cannot crash render;
+    // salvage the valid ones rather than dropping everything.
+    return parsed.filter(
+      (c): c is Conversation =>
+        !!c && typeof c === 'object'
+        && typeof (c as Conversation).id === 'string'
+        && typeof (c as Conversation).title === 'string'
+        && Array.isArray((c as Conversation).messages),
+    )
   } catch {
     return []
   }
@@ -129,6 +139,7 @@ export default function App() {
       updateConversation(sessionId, (conversation) => ({
         ...conversation,
         lastTraceId: response.traceId,
+        lastMessageId: response.messageId,
         messages: conversation.messages.map((message) =>
           message.id === assistantMessage.id
             ? { ...message, text: response.answer || '(empty answer)', pending: false, traceId: response.traceId }
@@ -215,6 +226,7 @@ export default function App() {
         open={feedbackOpen}
         sessionId={activeId}
         traceId={active?.lastTraceId}
+        messageId={active?.lastMessageId}
         onClose={() => setFeedbackOpen(false)}
       />
     </div>

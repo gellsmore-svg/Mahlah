@@ -52,6 +52,7 @@ export async function submitFeedback(params: {
       source: params.source ?? 'user',
     }),
   })
+  if (!res.ok) throw new Error(`/api/feedback failed: ${res.status}`)
   return res.json()
 }
 
@@ -63,6 +64,7 @@ export async function submitFeedback(params: {
 export function openTraceStream(
   params: { sessionId?: string; traceId?: string; replay?: boolean },
   onEvent: (event: TraceEvent) => void,
+  onError?: (error: Event) => void,
 ): EventSource {
   const q = new URLSearchParams()
   if (params.traceId) q.set('trace_id', params.traceId)
@@ -76,6 +78,12 @@ export function openTraceStream(
     } catch {
       /* keepalive / comment frame — ignore */
     }
+  }
+  source.onerror = (error) => {
+    // EventSource auto-reconnects on transient drops; surface the state so
+    // panels can show "reconnecting…" instead of silently going stale.
+    console.warn('trace stream error (readyState=%d)', source.readyState)
+    onError?.(error)
   }
   return source
 }

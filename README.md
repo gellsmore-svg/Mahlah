@@ -10,12 +10,24 @@ defining principle is a **clean separation of three channels**:
    scaffolding, no chain-of-thought, no database mechanics.
 2. **Process** — a live, structured view of what the system is doing
    (retrieval, context selection, research, model generation, persistence).
+   When Tirzah runs an interpretive Cairn plan, the panel shows the **running
+   plan live** — construct badges (CALL, ITERATE, DECISION, …) and step ids
+   stream in as the executor walks the plan, and the panel auto-expands on the
+   first plan event.
 3. **Dev/system log** — a deeper, serial, inspectable trace of the full request
    lifecycle, openable in a separate live window, suitable for a developer *or*
    another AI assistant to watch.
 
 The naming follows the family convention (the daughters of Zelophehad):
 **Tirzah, Noa, Hoglah, Milcah — and Mahlah.**
+
+## Answer niceties
+
+Assistant answers render as **markdown** (headings, lists, code blocks, links —
+via a dependency-free, injection-safe renderer), each with a copy button; the
+empty state offers starter suggestions and the composer grows with multi-line
+drafts. E2E: `npm run e2e` (answer waits honour `MAHLAH_E2E_ANSWER_TIMEOUT`,
+default 120s — Tirzah does real memory work per exchange).
 
 ## Why a separate project
 

@@ -62,3 +62,40 @@ export interface Conversation {
   lastTraceId?: string
   lastMessageId?: string
 }
+
+// --- Process management (Tirzah /api/process/*) ---
+export interface ProcessTemplate {
+  template_id: string
+  version: number
+  name: string
+  description: string
+  category: string | null
+  risk_level: string | null
+  scope: string | null
+  body: string
+  is_preset: boolean
+  created_by: string
+  created_at: string
+}
+
+export interface ProcessTraceEntry {
+  event: string
+  detail: Record<string, unknown>
+  at: string
+}
+
+export interface ProcessInstance {
+  instance_id: string
+  template_id: string
+  template_version: number
+  template_name: string
+  process_body: string
+  task: string
+  session_id: string | null
+  status: 'active' | 'awaiting_gate' | 'completed' | 'abandoned'
+  selection_reason: string
+  trace: ProcessTraceEntry[]
+  started_at: string
+  completed_at: string | null
+  outcome: string | null
+}

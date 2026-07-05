@@ -3,6 +3,7 @@ import ConversationSidebar from './components/ConversationSidebar'
 import ChatWindow from './components/ChatWindow'
 import PromptComposer from './components/PromptComposer'
 import ProcessPanel from './components/ProcessPanel'
+import ProcessBar from './components/ProcessBar'
 import FeedbackPanel from './components/FeedbackPanel'
 import { askTirzah, fetchRuntime, openTraceStream } from './api'
 import type { ChatMessage, Conversation, ModelOption, TraceEvent } from './types'
@@ -200,6 +201,7 @@ export default function App() {
       />
       <main className="main">
         <ChatWindow messages={messages} onSuggestion={sending ? undefined : handleSend} />
+        <ProcessBar sessionId={activeId} />
         <PromptComposer
           disabled={sending}
           models={models}

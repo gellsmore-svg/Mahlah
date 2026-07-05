@@ -1,4 +1,4 @@
-import type { AskResponse, Runtime, TraceEvent } from './types'
+import type { AskResponse, ProcessInstance, ProcessTemplate, Runtime, TraceEvent } from './types'
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' }
 
@@ -86,4 +86,69 @@ export function openTraceStream(
     onError?.(error)
   }
   return source
+}
+
+// --- Process management ---
+
+export async function fetchProcessTemplates(): Promise<ProcessTemplate[]> {
+  const res = await fetch('/api/process/templates')
+  if (!res.ok) throw new Error(`/api/process/templates failed: ${res.status}`)
+  return (await res.json()).templates ?? []
+}
+
+export async function createProcessTemplate(input: {
+  name: string; body: string; description?: string; risk_level?: string; scope?: string
+}): Promise<ProcessTemplate> {
+  const res = await fetch('/api/process/templates', {
+    method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(input),
+  })
+  if (!res.ok) throw new Error((await res.json()).detail || `create failed: ${res.status}`)
+  return (await res.json()).template
+}
+
+export async function fetchActiveProcess(sessionId: string): Promise<ProcessInstance | null> {
+  const res = await fetch(`/api/process/active?session_id=${encodeURIComponent(sessionId)}`)
+  if (!res.ok) return null
+  return (await res.json()).instance
+}
+
+export async function startProcessInstance(input: {
+  template_id: string; task: string; sessionId: string; selection_reason?: string
+}): Promise<ProcessInstance> {
+  const res = await fetch('/api/process/instances', {
+    method: 'POST', headers: JSON_HEADERS,
+    body: JSON.stringify({
+      template_id: input.template_id, task: input.task,
+      session_id: input.sessionId, selection_reason: input.selection_reason ?? 'manual',
+    }),
+  })
+  if (!res.ok) throw new Error((await res.json()).detail || `start failed: ${res.status}`)
+  return (await res.json()).instance
+}
+
+export async function resolveProcessGate(
+  instanceId: string, input: { step_id: string; approved: boolean; note?: string },
+): Promise<ProcessInstance> {
+  const res = await fetch(`/api/process/instances/${instanceId}/gate`, {
+    method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(input),
+  })
+  return (await res.json()).instance
+}
+
+export async function resolveProcessDeviation(
+  instanceId: string, approved: boolean, note?: string,
+): Promise<ProcessInstance> {
+  const res = await fetch(`/api/process/instances/${instanceId}/deviation/resolve`, {
+    method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ approved, note }),
+  })
+  return (await res.json()).instance
+}
+
+export async function completeProcessInstance(
+  instanceId: string, outcome: string,
+): Promise<ProcessInstance> {
+  const res = await fetch(`/api/process/instances/${instanceId}/complete`, {
+    method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ outcome }),
+  })
+  return (await res.json()).instance
 }

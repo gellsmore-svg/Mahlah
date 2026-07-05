@@ -742,3 +742,113 @@ body {
   background: #000;
   color: #fff;
 }
+
+/* --- process bar (active human-defined process) --- */
+.procbar {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 20px 6px;
+  width: 100%;
+}
+.procbar__set,
+.procbar__link {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  padding: 2px 4px;
+}
+.procbar__set:hover,
+.procbar__link:hover {
+  color: var(--accent);
+}
+.procbar__picker,
+.procbar__create {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 6px 0;
+}
+.procbar__create {
+  flex-direction: column;
+  align-items: stretch;
+}
+.procbar select,
+.procbar input,
+.procbar textarea {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  padding: 5px 8px;
+}
+.procbar__go,
+.procbar__approve,
+.procbar__reject {
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  padding: 5px 12px;
+  color: #fff;
+}
+.procbar__go,
+.procbar__approve {
+  background: var(--accent-2);
+}
+.procbar__reject {
+  background: var(--danger);
+}
+.procbar__active {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 6px 0;
+}
+.procbar__badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--bg-3);
+  color: var(--accent);
+}
+.procbar__status {
+  font-size: 12px;
+  text-transform: capitalize;
+}
+.procbar__gate {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px 10px;
+  border: 1px solid var(--started);
+  border-radius: 10px;
+  background: rgba(230, 180, 80, 0.08);
+}
+.procbar__gatetext {
+  flex: 1;
+  min-width: 180px;
+  font-size: 13px;
+}
+:root[data-theme='eink'] .procbar__gate {
+  border-color: #000;
+  background: #fff;
+}
+:root[data-theme='eink'] .procbar__go,
+:root[data-theme='eink'] .procbar__approve,
+:root[data-theme='eink'] .procbar__reject,
+:root[data-theme='eink'] .procbar__badge {
+  background: #000;
+  color: #fff;
+}

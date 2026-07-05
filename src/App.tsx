@@ -201,7 +201,7 @@ export default function App() {
       />
       <main className="main">
         <ChatWindow messages={messages} onSuggestion={sending ? undefined : handleSend} />
-        <ProcessBar sessionId={activeId} />
+        <ProcessBar sessionId={activeId} taskHint={messages.find((m) => m.role === 'user')?.text} />
         <PromptComposer
           disabled={sending}
           models={models}

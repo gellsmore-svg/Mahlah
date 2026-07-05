@@ -6,19 +6,25 @@ import {
   fetchProcessTemplates,
   resolveProcessDeviation,
   resolveProcessGate,
+  reviewProcess,
   startProcessInstance,
+  suggestProcess,
 } from '../api'
+import type { ProcessReview } from '../api'
 import type { ProcessInstance, ProcessTemplate } from '../types'
 
 /**
  * The active-process control that sits above the composer: shows which
  * human-defined process the current conversation runs under, lets the operator
- * pick/start one, surfaces gate + deviation pauses for approval, and completes
- * the instance. This is the human-oversight surface for agentic work.
+ * pick/start one (with a smart suggestion from the first message), surfaces
+ * gate + deviation pauses for approval, and completes the instance. This is the
+ * human-oversight surface for agentic work.
  */
 
 interface Props {
   sessionId: string | null
+  // The first user message — used to auto-suggest a fitting process.
+  taskHint?: string
 }
 
 // The trace events that mean "waiting on you".
@@ -34,14 +40,16 @@ function pendingApproval(instance: ProcessInstance): { kind: 'gate' | 'deviation
   return { kind: 'gate', stepId: String(last.detail.step_id ?? ''), text: `Gate at step ${String(last.detail.step_id ?? '?')}.` }
 }
 
-export default function ProcessBar({ sessionId }: Props) {
+export default function ProcessBar({ sessionId, taskHint }: Props) {
   const [active, setActive] = useState<ProcessInstance | null>(null)
   const [templates, setTemplates] = useState<ProcessTemplate[]>([])
   const [picking, setPicking] = useState(false)
   const [chosen, setChosen] = useState('')
+  const [suggestReason, setSuggestReason] = useState('')
   const [creating, setCreating] = useState(false)
   const [newName, setNewName] = useState('')
   const [newBody, setNewBody] = useState('')
+  const [review, setReview] = useState<ProcessReview | null>(null)
 
   const refresh = () => {
     if (!sessionId) {
@@ -66,18 +74,30 @@ export default function ProcessBar({ sessionId }: Props) {
 
   const start = async () => {
     if (!sessionId || !chosen) return
-    const template = templates.find((t) => t.template_id === chosen)
+    // If the operator kept the auto-suggestion, record it as such for the audit.
+    const took = !!suggestReason && chosen !== ''
     const started = await startProcessInstance({
       template_id: chosen,
-      task: 'Conversation work',
+      task: taskHint?.trim() || 'Conversation work',
       sessionId,
-      selection_reason: 'manual',
+      selection_reason: took ? 'suggested' : 'manual',
     }).catch(() => null)
     if (started) {
       setActive(started)
       setPicking(false)
     }
-    void template
+  }
+
+  const openPicker = async () => {
+    setPicking(true)
+    // Smart auto-selection: suggest a fitting process from the first message.
+    if (taskHint && taskHint.trim()) {
+      const suggestion = await suggestProcess(taskHint).catch(() => null)
+      if (suggestion?.suggested_template_id) {
+        setChosen(suggestion.suggested_template_id)
+        setSuggestReason(`${suggestion.suggested_template_name} — ${suggestion.reason}`)
+      }
+    }
   }
 
   const create = async () => {
@@ -89,7 +109,13 @@ export default function ProcessBar({ sessionId }: Props) {
       setCreating(false)
       setNewName('')
       setNewBody('')
+      setReview(null)
     }
+  }
+
+  const runReview = async () => {
+    if (!newBody.trim()) return
+    setReview(await reviewProcess(newBody).catch(() => null))
   }
 
   const approve = async (approved: boolean) => {
@@ -115,14 +141,14 @@ export default function ProcessBar({ sessionId }: Props) {
   return (
     <div className="procbar">
       {!active && !picking && (
-        <button className="procbar__set" onClick={() => setPicking(true)}>
+        <button className="procbar__set" onClick={openPicker}>
           + Set process
         </button>
       )}
 
       {!active && picking && (
         <div className="procbar__picker">
-          <select value={chosen} onChange={(e) => setChosen(e.target.value)}>
+          <select value={chosen} onChange={(e) => { setChosen(e.target.value); setSuggestReason('') }}>
             <option value="">choose a process…</option>
             {templates.map((t) => (
               <option key={t.template_id} value={t.template_id}>
@@ -138,9 +164,14 @@ export default function ProcessBar({ sessionId }: Props) {
           <button className="procbar__link" onClick={() => setCreating((v) => !v)}>
             {creating ? 'cancel' : 'new…'}
           </button>
-          <button className="procbar__link" onClick={() => setPicking(false)}>
+          <button className="procbar__link" onClick={() => { setPicking(false); setSuggestReason('') }}>
             close
           </button>
+          {suggestReason && (
+            <span className="procbar__suggest" title="Auto-suggested from your first message">
+              ✦ suggested: {suggestReason}
+            </span>
+          )}
         </div>
       )}
 
@@ -153,7 +184,36 @@ export default function ProcessBar({ sessionId }: Props) {
             onChange={(e) => setNewBody(e.target.value)}
             rows={4}
           />
-          <button className="procbar__go" onClick={create}>Save process</button>
+          {review && (
+            <div className="procbar__review">
+              {review.findings.length > 0 && (
+                <ul className="procbar__findings">
+                  {review.findings.map((f: ProcessReview["findings"][number], i: number) => (
+                    <li key={i} className={`procbar__finding procbar__finding--${f.kind}`}>
+                      <b>{f.kind.replace('_', ' ')}:</b> {f.note}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {review.clarifying_questions.length > 0 && (
+                <div className="procbar__questions">
+                  <b>Tirzah asks:</b>
+                  <ul>
+                    {review.clarifying_questions.map((q: string, i: number) => <li key={i}>{q}</li>)}
+                  </ul>
+                </div>
+              )}
+              {review.suggested_body && (
+                <button className="procbar__link" onClick={() => setNewBody(review.suggested_body || '')}>
+                  use Tirzah's suggested rewrite
+                </button>
+              )}
+            </div>
+          )}
+          <div className="procbar__createbtns">
+            <button className="procbar__link" onClick={runReview}>Review with Tirzah</button>
+            <button className="procbar__go" onClick={create}>Save process</button>
+          </div>
         </div>
       )}
 

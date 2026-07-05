@@ -152,3 +152,37 @@ export async function completeProcessInstance(
   })
   return (await res.json()).instance
 }
+
+export interface ProcessSuggestion {
+  suggested_template_id: string | null
+  suggested_template_name?: string
+  reason: string
+  method: string
+  inferred_risk: string
+  signals: string[]
+  candidates: { template_id: string; name: string; score: number; reason: string }[]
+}
+
+export async function suggestProcess(task: string): Promise<ProcessSuggestion | null> {
+  const res = await fetch('/api/process/suggest', {
+    method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ task }),
+  })
+  if (!res.ok) return null
+  return (await res.json()).suggestion
+}
+
+export interface ProcessReview {
+  has_gates: boolean
+  clarifying_questions: string[]
+  findings: { kind: string; note: string; source?: string }[]
+  suggested_body: string | null
+  model_used: boolean
+}
+
+export async function reviewProcess(body: string, useModel = true): Promise<ProcessReview | null> {
+  const res = await fetch('/api/process/review', {
+    method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ body, use_model: useModel }),
+  })
+  if (!res.ok) return null
+  return (await res.json()).review
+}

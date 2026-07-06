@@ -132,6 +132,7 @@ export async function resolveProcessGate(
   const res = await fetch(`/api/process/instances/${instanceId}/gate`, {
     method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(input),
   })
+  if (!res.ok) throw new Error((await res.json()).detail || `gate failed: ${res.status}`)
   return (await res.json()).instance
 }
 
@@ -141,6 +142,7 @@ export async function resolveProcessDeviation(
   const res = await fetch(`/api/process/instances/${instanceId}/deviation/resolve`, {
     method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ approved, note }),
   })
+  if (!res.ok) throw new Error((await res.json()).detail || `deviation resolve failed: ${res.status}`)
   return (await res.json()).instance
 }
 
@@ -150,6 +152,7 @@ export async function completeProcessInstance(
   const res = await fetch(`/api/process/instances/${instanceId}/complete`, {
     method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ outcome }),
   })
+  if (!res.ok) throw new Error((await res.json()).detail || `complete failed: ${res.status}`)
   return (await res.json()).instance
 }
 

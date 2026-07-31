@@ -10,7 +10,7 @@ defining principle is a **clean separation of three channels**:
    scaffolding, no chain-of-thought, no database mechanics.
 2. **Process** — a live, structured view of what the system is doing
    (retrieval, context selection, research, model generation, persistence).
-   When Tirzah runs an interpretive Cairn plan, the panel shows the **running
+   When Tirzah runs an interpretive Deborah plan, the panel shows the **running
    plan live** — construct badges (CALL, ITERATE, DECISION, …) and step ids
    stream in as the executor walks the plan, and the panel auto-expands on the
    first plan event.
@@ -34,7 +34,7 @@ default 120s — Tirzah does real memory work per exchange).
 Tirzah is the backend: semantic memory, MongoDB retrieval, model calls, the
 process/trace event stream, and logging. Mahlah is the presentation layer. The
 split keeps Tirzah lean and API-first, and lets the UI evolve independently —
-and later point at other family backends (Mahalath, Hoglah, Cairn, Milcah)
+and later point at other family backends (Mahalath, Hoglah, Deborah, Milcah)
 through the same shared trace contract.
 
 ## What it consumes (Tirzah API contract)

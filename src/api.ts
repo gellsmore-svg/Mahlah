@@ -108,7 +108,9 @@ export async function createProcessTemplate(input: {
 
 export async function fetchActiveProcess(sessionId: string): Promise<ProcessInstance | null> {
   const res = await fetch(`/api/process/active?session_id=${encodeURIComponent(sessionId)}`)
-  if (!res.ok) return null
+  // 404 = no active process for this session (not an error).
+  if (res.status === 404) return null
+  if (!res.ok) throw new Error(`/api/process/active failed: ${res.status}`)
   return (await res.json()).instance
 }
 
@@ -170,8 +172,8 @@ export async function suggestProcess(task: string): Promise<ProcessSuggestion | 
   const res = await fetch('/api/process/suggest', {
     method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ task }),
   })
-  if (!res.ok) return null
-  return (await res.json()).suggestion
+  if (!res.ok) throw new Error(`/api/process/suggest failed: ${res.status}`)
+  return (await res.json()).suggestion ?? null
 }
 
 export interface ProcessReview {
@@ -186,6 +188,6 @@ export async function reviewProcess(body: string, useModel = true): Promise<Proc
   const res = await fetch('/api/process/review', {
     method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ body, use_model: useModel }),
   })
-  if (!res.ok) return null
-  return (await res.json()).review
+  if (!res.ok) throw new Error(`/api/process/review failed: ${res.status}`)
+  return (await res.json()).review ?? null
 }

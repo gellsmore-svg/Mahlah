@@ -39,7 +39,7 @@ through the same shared trace contract.
 
 ## What it consumes (Tirzah API contract)
 
-Tirzah's backend already returns the 3-channel contract (Phase 1, complete):
+Tirzah's backend returns the 3-channel contract:
 
 - `POST /api/ask` →
   ```json
@@ -58,26 +58,35 @@ Tirzah's backend already returns the 3-channel contract (Phase 1, complete):
 - `GET /api/trace/events?trace_id=…|session_id=…` — replay/poll persisted events.
 - `POST /api/feedback` — free-text feedback tied to the current `traceId`/`sessionId`
   (stored as a structured record **and** a `feedback.submitted` trace event).
+- `GET /api/runtime` — adapters, models, and retrieval modes for the composer
+  dropdowns.
+
+### Process Bar (`/api/process/*`)
+
+The **Process Bar** above the composer is the human-oversight surface for
+agentic work. It binds a conversation to a human-defined process template,
+auto-suggests a fit from the first message, and surfaces gate / deviation
+pauses for approve/reject.
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/process/templates` | List presets + saved templates |
+| `POST` | `/api/process/templates` | Create a template (`name`, `body`, …) |
+| `POST` | `/api/process/suggest` | Suggest a template for a task string |
+| `POST` | `/api/process/review` | Tirzah review of a draft process body |
+| `GET` | `/api/process/active?session_id=…` | Active instance for the session (404 → none) |
+| `POST` | `/api/process/instances` | Start an instance on a session |
+| `POST` | `/api/process/instances/{id}/gate` | Approve/reject a gate step |
+| `POST` | `/api/process/instances/{id}/deviation/resolve` | Resolve a deviation |
+| `POST` | `/api/process/instances/{id}/complete` | Mark the instance complete |
+
+API failures surface as an inline banner in the bar (not silent no-ops).
 
 Structured event types are stable and extensible: `session.created`,
 `message.user.submitted`, `process.started`, `retrieval.mongo.*`,
 `context.selected`, `research.*`, `model.prompt.built`, `model.response.*`,
 `answer.finalized`, `log.persisted`, `feedback.submitted`, … (defined by
 Galeed, with Tirzah currently serving the HTTP/SSE trace API).
-
-## Planned UI (Phase 2)
-
-- Collapsible **conversations sidebar** (auto-derived titles; compact "new chat").
-- Central **rolling chat history** (user/assistant turns; continues a conversation).
-- Bottom **composer** (Enter submits, Shift+Enter newline; compact send icon).
-- **Process panel** — live request state, separate from the answer.
-- Separate **live dev-log window/tab** — same session/trace ids, near-real-time.
-- **Feedback panel** — brain-dump tied to the current trace.
-- Non-dominating model selector.
-
-Candidate components: `ConversationSidebar`, `ChatWindow`, `MessageList`,
-`MessageBubble`, `PromptComposer`, `ProcessPanel`, `ProcessEventList`,
-`DevLogViewer`, `FeedbackPanel`, `ModelSelector`, `NewChatButton`.
 
 ## Running it
 
@@ -99,9 +108,13 @@ actually installed.
   (Enter sends / Shift+Enter newline), compact send + model selector.
 - ✅ Conversations — auto-titled from the first prompt, inline rename, delete;
   persisted client-side (localStorage) keyed by Tirzah `session_id`.
-- ✅ Clean answers in chat; **process in a separate panel, live via SSE**.
+- ✅ Clean answers in chat; **process panel live via SSE**.
+- ✅ **Process Bar** — templates, auto-suggest, Tirzah review, gate/deviation
+  approval UI, complete action (see table above).
 - ✅ Separate **dev-log window** (`⤢`) — history + live, full event detail, copy-as-JSON.
 - ✅ **Feedback** (`⚑`) — free-text, tied to the current session/trace.
 
 Not yet done: LLM-derived titles, server-side session sync (`/api/sessions`), and
 retiring Tirzah's old built-in static UI (pending a live run-through).
+
+Unit tests: `npm test` (vitest) covers Process Bar approval-state logic.

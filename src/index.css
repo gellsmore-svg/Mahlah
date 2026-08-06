@@ -750,6 +750,19 @@ body {
   padding: 0 20px 6px;
   width: 100%;
 }
+.procbar__error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: var(--danger, #c0392b);
+  font-size: 12px;
+  margin: 0 0 6px;
+  padding: 6px 8px;
+  border: 1px solid color-mix(in srgb, var(--danger, #c0392b) 45%, var(--border));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--danger, #c0392b) 10%, transparent);
+}
 .procbar__set,
 .procbar__link {
   background: transparent;

@@ -3,8 +3,18 @@
  *
  * Supports the subset local models actually emit: headings, paragraphs,
  * bold/italic, inline code, fenced code blocks, ordered/unordered lists,
- * blockquotes, and http(s) links. Output is React elements only (never raw
- * HTML), so model output cannot inject markup.
+ * blockquotes, and http(s) links.
+ *
+ * SAFETY. Output is React elements only — there is no `dangerouslySetInnerHTML`
+ * anywhere — so raw HTML in model output is escaped rather than executed, and
+ * only `http://` / `https://` hrefs become anchors. An unrecognised scheme
+ * (`javascript:`, `data:`, or an uppercased `HTTPS://`) falls through to plain
+ * text: the check fails closed by design.
+ *
+ * DELIBERATELY NOT SUPPORTED, so the parser stays small and predictable:
+ * nested inline types (``**bold with `code`**`` renders the backticks
+ * literally), tables, images, reference-style links, and setext headings.
+ * Inline tokens are matched whole rather than recursively.
  */
 import { Fragment, type ReactNode } from 'react'
 

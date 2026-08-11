@@ -53,6 +53,10 @@ Tirzah's backend returns the 3-channel contract:
     "traceId": "trace_…", "sessionId": "…", "messageId": "msg_…", "requestId": "req_…"
   }
   ```
+  Those are the fields Mahlah consumes. The live response carries ~30 in total
+  (including `ok`, `retrieval_status`, `semantic_status`, `process_trace`,
+  `request_plan`); the extras are ignored. Worth knowing if the UI ever needs
+  to distinguish "retrieval found nothing" from a confident-sounding answer.
 - `GET /api/trace/stream?session_id=…|trace_id=…` — **SSE** live process/log stream
   (the process panel and the separate dev-log window subscribe here).
 - `GET /api/trace/events?trace_id=…|session_id=…` — replay/poll persisted events.
@@ -118,3 +122,11 @@ Not yet done: LLM-derived titles, server-side session sync (`/api/sessions`), an
 retiring Tirzah's old built-in static UI (pending a live run-through).
 
 Unit tests: `npm test` (vitest) covers Process Bar approval-state logic.
+
+## Review
+
+A point-in-time functional + code review of 0.1.0 is in
+[`docs/review-2026-08-11.md`](docs/review-2026-08-11.md). All findings are
+actioned: the Process Bar no longer crashes on a malformed trace entry, backend
+outages report their HTTP status instead of a JSON parse error, persistence is
+capped and reports degradation, and CI now runs the test suite.

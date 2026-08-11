@@ -67,3 +67,53 @@ describe('pendingApproval', () => {
     })
   })
 })
+
+// This runs during render of the Process Bar. A throw here takes down the
+// approve/reject control — the surface whose job is unblocking paused work.
+describe('pendingApproval survives malformed trace entries', () => {
+  const awaiting = (trace: unknown[]) =>
+    base({ status: 'awaiting_gate', trace: trace as ProcessTraceEntry[] })
+
+  it('a gate entry with no detail key does not throw', () => {
+    const result = pendingApproval(awaiting([{ event: 'process.gate.reached' }]))
+    expect(result).toEqual({
+      kind: 'gate',
+      stepId: '',
+      text: 'Gate reached — step not identified.',
+    })
+  })
+
+  it('a deviation entry with no detail key does not throw', () => {
+    expect(pendingApproval(awaiting([{ event: 'process.deviation.flagged' }]))).toEqual({
+      kind: 'deviation',
+      text: 'Deviation flagged.',
+    })
+  })
+
+  it('a null entry in the trace is skipped', () => {
+    const result = pendingApproval(
+      awaiting([null, { event: 'process.gate.reached', detail: { step_id: '3' } }]),
+    )
+    expect(result?.stepId).toBe('3')
+  })
+
+  it('a non-array trace does not throw', () => {
+    expect(
+      pendingApproval(base({ status: 'awaiting_gate', trace: undefined as never })),
+    ).toEqual({ kind: 'gate', text: 'Paused for approval.' })
+  })
+
+  it('an object detail value does not render as [object Object]', () => {
+    const result = pendingApproval(
+      awaiting([{ event: 'process.gate.reached', detail: { step_id: { nested: 1 } } }]),
+    )
+    expect(result?.text).not.toContain('[object')
+  })
+
+  it('a numeric step id still renders', () => {
+    const result = pendingApproval(
+      awaiting([{ event: 'process.gate.reached', detail: { step_id: 4 } }]),
+    )
+    expect(result?.text).toBe('Gate at step 4.')
+  })
+})

@@ -903,3 +903,14 @@ body {
   margin: 2px 0 0;
   padding-left: 16px;
 }
+
+/* Persistence degraded (quota reached, or storage unavailable). Shown rather
+   than letting history silently stop being saved. */
+.app__persist-warning {
+  margin: 0;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: var(--warn, #8a6d00);
+  border-bottom: 1px solid var(--line, #ddd);
+  background: color-mix(in srgb, var(--warn, #8a6d00) 10%, transparent);
+}

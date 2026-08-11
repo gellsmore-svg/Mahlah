@@ -6,9 +6,8 @@ import ProcessPanel from './components/ProcessPanel'
 import ProcessBar from './components/ProcessBar'
 import FeedbackPanel from './components/FeedbackPanel'
 import { askTirzah, fetchRuntime, openTraceStream } from './api'
+import { loadConversations, persistConversations } from './storage'
 import type { ChatMessage, Conversation, ModelOption, TraceEvent } from './types'
-
-const STORAGE_KEY = 'mahlah.conversations.v1'
 
 function uid(prefix: string): string {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`
@@ -18,25 +17,6 @@ function deriveTitle(text: string): string {
   const cleaned = text.trim().replace(/\s+/g, ' ')
   if (!cleaned) return 'New chat'
   return cleaned.length > 40 ? `${cleaned.slice(0, 40)}…` : cleaned
-}
-
-function loadConversations(): Conversation[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    const parsed: unknown = raw ? JSON.parse(raw) : []
-    if (!Array.isArray(parsed)) return []
-    // Schema-check each record so corrupt/legacy storage cannot crash render;
-    // salvage the valid ones rather than dropping everything.
-    return parsed.filter(
-      (c): c is Conversation =>
-        !!c && typeof c === 'object'
-        && typeof (c as Conversation).id === 'string'
-        && typeof (c as Conversation).title === 'string'
-        && Array.isArray((c as Conversation).messages),
-    )
-  } catch {
-    return []
-  }
 }
 
 export default function App() {
@@ -52,6 +32,7 @@ export default function App() {
   const [collapsed, setCollapsed] = useState(false)
   const [sending, setSending] = useState(false)
   const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const [persistError, setPersistError] = useState<string | null>(null)
   const [theme, setTheme] = useState(() => localStorage.getItem('mahlah.theme') || 'eink')
   const [processCollapsed, setProcessCollapsed] = useState(
     () => localStorage.getItem('mahlah.processCollapsed') !== 'false',
@@ -67,7 +48,8 @@ export default function App() {
   }, [processCollapsed])
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(conversations))
+    const failure = persistConversations(conversations)
+    setPersistError(failure)
   }, [conversations])
 
   // Populate model / adapter / retrieval-mode options from the live backend so
@@ -200,6 +182,11 @@ export default function App() {
         onToggleTheme={() => setTheme((value) => (value === 'eink' ? 'dark' : 'eink'))}
       />
       <main className="main">
+        {persistError && (
+          <p className="app__persist-warning" role="status">
+            ⚠ {persistError}
+          </p>
+        )}
         <ChatWindow messages={messages} onSuggestion={sending ? undefined : handleSend} />
         <ProcessBar sessionId={activeId} taskHint={messages.find((m) => m.role === 'user')?.text} />
         <PromptComposer

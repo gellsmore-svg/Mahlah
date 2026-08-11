@@ -2,6 +2,25 @@ import type { AskResponse, ProcessInstance, ProcessTemplate, Runtime, TraceEvent
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' }
 
+/**
+ * The most useful message we can give for a failed response.
+ *
+ * Reading the body must not be able to throw. Calling `res.json()` inline meant
+ * that when the body was NOT json — a proxy 502 returning HTML, or an empty
+ * 500 — the parse error replaced the status, and the operator saw
+ * "Unexpected token < in JSON at position 0" instead of "the backend is down".
+ * That is the likeliest real failure, and it read like a client bug.
+ */
+async function errorMessage(res: Response, fallback: string): Promise<string> {
+  try {
+    const body = await res.json()
+    const detail = body?.detail
+    return typeof detail === 'string' && detail.trim() ? detail : fallback
+  } catch {
+    return fallback // non-json body: the status is the signal that matters
+  }
+}
+
 export async function fetchRuntime(): Promise<Runtime> {
   const res = await fetch('/api/runtime')
   if (!res.ok) throw new Error(`Tirzah /api/runtime failed: ${res.status}`)
@@ -102,7 +121,7 @@ export async function createProcessTemplate(input: {
   const res = await fetch('/api/process/templates', {
     method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(input),
   })
-  if (!res.ok) throw new Error((await res.json()).detail || `create failed: ${res.status}`)
+  if (!res.ok) throw new Error(await errorMessage(res, `create template failed: ${res.status}`))
   return (await res.json()).template
 }
 
@@ -124,7 +143,7 @@ export async function startProcessInstance(input: {
       session_id: input.sessionId, selection_reason: input.selection_reason ?? 'manual',
     }),
   })
-  if (!res.ok) throw new Error((await res.json()).detail || `start failed: ${res.status}`)
+  if (!res.ok) throw new Error(await errorMessage(res, `start process failed: ${res.status}`))
   return (await res.json()).instance
 }
 
@@ -134,7 +153,7 @@ export async function resolveProcessGate(
   const res = await fetch(`/api/process/instances/${instanceId}/gate`, {
     method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(input),
   })
-  if (!res.ok) throw new Error((await res.json()).detail || `gate failed: ${res.status}`)
+  if (!res.ok) throw new Error(await errorMessage(res, `gate approval failed: ${res.status}`))
   return (await res.json()).instance
 }
 
@@ -144,7 +163,7 @@ export async function resolveProcessDeviation(
   const res = await fetch(`/api/process/instances/${instanceId}/deviation/resolve`, {
     method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ approved, note }),
   })
-  if (!res.ok) throw new Error((await res.json()).detail || `deviation resolve failed: ${res.status}`)
+  if (!res.ok) throw new Error(await errorMessage(res, `deviation resolve failed: ${res.status}`))
   return (await res.json()).instance
 }
 
@@ -154,7 +173,7 @@ export async function completeProcessInstance(
   const res = await fetch(`/api/process/instances/${instanceId}/complete`, {
     method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ outcome }),
   })
-  if (!res.ok) throw new Error((await res.json()).detail || `complete failed: ${res.status}`)
+  if (!res.ok) throw new Error(await errorMessage(res, `complete process failed: ${res.status}`))
   return (await res.json()).instance
 }
 

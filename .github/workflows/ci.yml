@@ -11,4 +11,7 @@ jobs:
         with: { node-version: 20 }
       - run: npm ci
       - run: npm run typecheck
+      # The unit suite covers the Process Bar approval logic — the
+      # human-oversight surface. It existed but was never gated here.
+      - run: npm test
       - run: npm run build

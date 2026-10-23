@@ -38,7 +38,9 @@ npm install && npm run dev         # Mahlah on http://localhost:5273
 ```
 
 Mahlah proxies `/api` to `http://localhost:8765`; override with
-`VITE_TIRZAH_API`. The model, adapter and retrieval-mode menus fill from
+`VITE_TIRZAH_API`. To skip the dev server, Tirzah can serve Mahlah's
+production build itself: run `scripts/build_ui.sh` in Tirzah, and
+`tirzah serve` then shows Mahlah on http://127.0.0.1:8765/. The model, adapter and retrieval-mode menus fill from
 Tirzah's `/api/runtime`, so they show what is actually installed. The UI
 defaults to an e-ink-friendly high-contrast theme.
 
@@ -60,8 +62,7 @@ defaults to an e-ink-friendly high-contrast theme.
   Tirzah's session id, capped in size). They do not sync between browsers or
   machines yet.
 - Titles come from the first prompt, not from a model.
-- Tirzah still ships its older built-in UI; retiring it is pending a live
-  run-through.
+
 
 ## Develop
 

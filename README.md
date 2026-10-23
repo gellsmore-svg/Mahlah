@@ -1,132 +1,83 @@
 # Mahlah
 
-**The conversational web interface for the Tirzah memory engine — and, in time, the wider family.**
+**Mahlah is a chat interface for your Tirzah memory, built to keep the answer
+separate from the machinery behind it.** You see a clean conversational
+reply. Beside it, what the system did to produce that answer is shown live:
+retrieval, context selection, research, generation, and the running plan.
 
-Mahlah is the front end that was split out of [Tirzah](https://github.com/gellsmore-svg/tirzah).
-It is a ChatGPT/Claude-style chat application that talks to Tirzah's HTTP API. Its
-defining principle is a **clean separation of three channels**:
+Mahlah is the front end that was split out of
+[Tirzah](https://github.com/gellsmore-svg/tirzah). Tirzah does the memory,
+retrieval and model work; Mahlah only presents it.
 
-1. **Answer** — the normal conversational reply shown in the chat. No process
-   scaffolding, no chain-of-thought, no database mechanics.
-2. **Process** — a live, structured view of what the system is doing
-   (retrieval, context selection, research, model generation, persistence).
-   When Tirzah runs an interpretive Deborah plan, the panel shows the **running
-   plan live** — construct badges (CALL, ITERATE, DECISION, …) and step ids
-   stream in as the executor walks the plan, and the panel auto-expands on the
-   first plan event.
-3. **Dev/system log** — a deeper, serial, inspectable trace of the full request
-   lifecycle, openable in a separate live window, suitable for a developer *or*
-   another AI assistant to watch.
+## Three channels, never mixed
 
-The naming follows the family convention (the daughters of Zelophehad):
-**Tirzah, Noa, Hoglah, Milcah — and Mahlah.**
+1. **Answer:** the reply in the chat, rendered as markdown with a copy
+   button. It never contains process scaffolding, chain-of-thought or
+   database mechanics.
+2. **Process:** a live panel showing what the system is doing for this
+   request. When Tirzah runs a Deborah plan, the panel streams the plan as it
+   executes, with construct badges (CALL, ITERATE, DECISION…) and step ids.
+3. **Dev log:** the full, serial trace of the request lifecycle in a separate
+   window (`⤢`), with history and live events and copy-as-JSON. It is
+   suitable for a developer, or another AI assistant, to watch.
 
-## Answer niceties
+## Is it for you?
 
-Assistant answers render as **markdown** (headings, lists, code blocks, links —
-via a dependency-free, injection-safe renderer), each with a copy button; the
-empty state offers starter suggestions and the composer grows with multi-line
-drafts. E2E: `npm run e2e` (answer waits honour `MAHLAH_E2E_ANSWER_TIMEOUT`,
-default 120s — Tirzah does real memory work per exchange).
+**Good fit:** you run Tirzah and want a familiar chat UI that also shows *how*
+each answer was produced, plus human oversight of agentic work through the
+Process Bar.
 
-## Why a separate project
+**Not a fit:** a standalone chatbot. Mahlah has no backend of its own and needs
+a running Tirzah.
 
-Tirzah is the backend: semantic memory, MongoDB retrieval, model calls, the
-process/trace event stream, and logging. Mahlah is the presentation layer. The
-split keeps Tirzah lean and API-first, and lets the UI evolve independently —
-and later point at other family backends (Mahalath, Hoglah, Deborah, Milcah)
-through the same shared trace contract.
-
-## What it consumes (Tirzah API contract)
-
-Tirzah's backend returns the 3-channel contract:
-
-- `POST /api/ask` →
-  ```json
-  {
-    "answer": "clean conversational answer",
-    "processEvents": [
-      { "type": "retrieval.mongo.completed", "status": "ok",
-        "summary": "Construct Retrieval Context", "trace_id": "trace_…",
-        "session_id": "…", "seq": 3, "timestamp": "…", "metadata": {} }
-    ],
-    "traceId": "trace_…", "sessionId": "…", "messageId": "msg_…", "requestId": "req_…"
-  }
-  ```
-  Those are the fields Mahlah consumes. The live response carries ~30 in total
-  (including `ok`, `retrieval_status`, `semantic_status`, `process_trace`,
-  `request_plan`); the extras are ignored. Worth knowing if the UI ever needs
-  to distinguish "retrieval found nothing" from a confident-sounding answer.
-- `GET /api/trace/stream?session_id=…|trace_id=…` — **SSE** live process/log stream
-  (the process panel and the separate dev-log window subscribe here).
-- `GET /api/trace/events?trace_id=…|session_id=…` — replay/poll persisted events.
-- `POST /api/feedback` — free-text feedback tied to the current `traceId`/`sessionId`
-  (stored as a structured record **and** a `feedback.submitted` trace event).
-- `GET /api/runtime` — adapters, models, and retrieval modes for the composer
-  dropdowns.
-
-### Process Bar (`/api/process/*`)
-
-The **Process Bar** above the composer is the human-oversight surface for
-agentic work. It binds a conversation to a human-defined process template,
-auto-suggests a fit from the first message, and surfaces gate / deviation
-pauses for approve/reject.
-
-| Method | Path | Purpose |
-|---|---|---|
-| `GET` | `/api/process/templates` | List presets + saved templates |
-| `POST` | `/api/process/templates` | Create a template (`name`, `body`, …) |
-| `POST` | `/api/process/suggest` | Suggest a template for a task string |
-| `POST` | `/api/process/review` | Tirzah review of a draft process body |
-| `GET` | `/api/process/active?session_id=…` | Active instance for the session (404 → none) |
-| `POST` | `/api/process/instances` | Start an instance on a session |
-| `POST` | `/api/process/instances/{id}/gate` | Approve/reject a gate step |
-| `POST` | `/api/process/instances/{id}/deviation/resolve` | Resolve a deviation |
-| `POST` | `/api/process/instances/{id}/complete` | Mark the instance complete |
-
-API failures surface as an inline banner in the bar (not silent no-ops).
-
-Structured event types are stable and extensible: `session.created`,
-`message.user.submitted`, `process.started`, `retrieval.mongo.*`,
-`context.selected`, `research.*`, `model.prompt.built`, `model.response.*`,
-`answer.finalized`, `log.persisted`, `feedback.submitted`, … (defined by
-Galeed, with Tirzah currently serving the HTTP/SSE trace API).
-
-## Running it
+## Try it
 
 ```bash
-# 1) Tirzah backend (uvicorn on :8765 by default)
-cd ../tirzah && tirzah serve
-# 2) Mahlah (http://localhost:5273, proxies /api -> :8765)
-npm install && npm run dev
+tirzah serve                       # Tirzah's API on :8765
+npm install && npm run dev         # Mahlah on http://localhost:5273
 ```
-Override the backend with `VITE_TIRZAH_API`. The model / adapter / retrieval-mode
-dropdowns populate from the backend's `/api/runtime`, so they always reflect what's
-actually installed.
 
-## Status
+Mahlah proxies `/api` to `http://localhost:8765`; override with
+`VITE_TIRZAH_API`. The model, adapter and retrieval-mode menus fill from
+Tirzah's `/api/runtime`, so they show what is actually installed. The UI
+defaults to an e-ink-friendly high-contrast theme.
 
-**Stack: Vite + React + TypeScript.** Core implemented and building clean:
+## What you can do
 
-- ✅ Conversational layout — collapsible sidebar, rolling chat, bottom composer
-  (Enter sends / Shift+Enter newline), compact send + model selector.
-- ✅ Conversations — auto-titled from the first prompt, inline rename, delete;
-  persisted client-side (localStorage) keyed by Tirzah `session_id`.
-- ✅ Clean answers in chat; **process panel live via SSE**.
-- ✅ **Process Bar** — templates, auto-suggest, Tirzah review, gate/deviation
-  approval UI, complete action (see table above).
-- ✅ Separate **dev-log window** (`⤢`) — history + live, full event detail, copy-as-JSON.
-- ✅ **Feedback** (`⚑`) — free-text, tied to the current session/trace.
+- **Converse.** Conversations are auto-titled from the first prompt, and can
+  be renamed or deleted. Enter sends; Shift+Enter adds a new line.
+- **Oversee agentic work with the Process Bar.** Bind a conversation to a
+  human-defined process template (one is suggested from your first message),
+  have Tirzah review a draft process, and approve or reject gate and
+  deviation pauses as they come up. Failures show as a banner, never as
+  silent no-ops.
+- **Leave feedback** (`⚑`) tied to the current session and trace. It is
+  stored as a record and as a `feedback.submitted` trace event.
 
-Not yet done: LLM-derived titles, server-side session sync (`/api/sessions`), and
-retiring Tirzah's old built-in static UI (pending a live run-through).
+## Know before you rely on it
 
-Unit tests: `npm test` (vitest) covers Process Bar approval-state logic.
+- **Conversations are stored in this browser only** (localStorage, keyed by
+  Tirzah's session id, capped in size). They do not sync between browsers or
+  machines yet.
+- Titles come from the first prompt, not from a model.
+- Tirzah still ships its older built-in UI; retiring it is pending a live
+  run-through.
 
-## Review
+## Develop
 
-A point-in-time functional + code review of 0.1.0 is in
-[`docs/review-2026-08-11.md`](docs/review-2026-08-11.md). All findings are
-actioned: the Process Bar no longer crashes on a malformed trace entry, backend
-outages report their HTTP status instead of a JSON parse error, persistence is
-capped and reports degradation, and CI now runs the test suite.
+```bash
+npm test                           # vitest: Process Bar approval-state logic
+npm run e2e                        # end-to-end against a real Tirzah
+```
+
+End-to-end answers wait up to 120 s by default, because Tirzah does real
+memory work for each exchange (`MAHLAH_E2E_ANSWER_TIMEOUT`, in ms).
+
+The endpoints Mahlah calls, with the response shape it relies on, are in
+[docs/tirzah-api-contract.md](docs/tirzah-api-contract.md). Event types are
+defined by [Galeed](https://github.com/gellsmore-svg/galeed) and served by
+Tirzah. The [2026-08-11 review](docs/review-2026-08-11.md) findings are all
+actioned.
+
+*Mahlah is one of the daughters of Zelophehad, like her sisters Tirzah, Noa,
+Hoglah and Milcah.*
